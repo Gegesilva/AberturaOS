@@ -40,6 +40,7 @@ function geraReq($conn, $local, $email, $ultcont, $serie, $whatsapp, $solicitant
             WHERE TB02112_PAT = '$serie'
             AND TB02112_SITUACAO = 'A'
     ";
+    $NumSerie = '';
     $stmt = sqlsrv_query($conn, $sql);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $NumSerie = $row['NumSerie'];
@@ -111,6 +112,10 @@ function geraReq($conn, $local, $email, $ultcont, $serie, $whatsapp, $solicitant
 
     ";
     $stmt = sqlsrv_query($conn, $sql);
+    if ($stmt === false) {
+        die(print_r(sqlsrv_errors(), true));
+        //print ('Erro OS não gravada!!!');
+    }
 }
 
 function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
@@ -124,6 +129,7 @@ function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
             WHERE TB02112_PAT = '$serie'
             AND TB02112_SITUACAO = 'A'
             ";
+    $NumSerie = '';
     $stmt = sqlsrv_query($conn, $sql);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $NumSerie = $row['NumSerie'];
@@ -174,4 +180,9 @@ function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
             WHERE TB02112_NUMSERIE = '$serie'
             AND TB02112_SITUACAO = 'A'";
     $stmt = sqlsrv_query($conn, $sql);
+
+    if ($stmt === false) {
+        die(print_r(sqlsrv_errors(), true));
+        //print ('Erro OS não gravada!!!');
+    }
 }

@@ -3,7 +3,7 @@ include_once "../config.php";
 
 /* Gera o proximo numero de OS */
 $sql = "SELECT TOP 1
-            TB00002_COD + 1 novaOS 
+            FORMAT(TB00002_COD + 1, '000000') novaOS 
         FROM TB00002
         WHERE 
             TB00002_TABELA = 'TB02115'
@@ -42,6 +42,7 @@ function gravaOS($conn, $estado, $local, $email, $contpb, $serie, $whatsapp, $so
             WHERE TB02112_PAT = '$serie'
             AND TB02112_SITUACAO = 'A'
     ";
+    $NumSerie = "";
     $stmt = sqlsrv_query($conn, $sql);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $NumSerie = $row['NumSerie'];

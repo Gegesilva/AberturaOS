@@ -2,7 +2,7 @@
 include_once ("../config.php");
 
 $serverName = "$server";
-$connectionInfo = array("Database" => "$base", "UID" => "$usuarioBanco", "PWD" => "$SenhaBanco", "CharacterSet" => "UTF-8");
+$connectionInfo = array("Database" => "$base", "Encrypt"=>false, "TrustServerCertificate"=>false, "UID" => "$usuarioBanco", "PWD" => "$SenhaBanco", "CharacterSet" => "UTF-8");
 $conn = sqlsrv_connect($serverName, $connectionInfo);
 if ($conn) {
   echo "";

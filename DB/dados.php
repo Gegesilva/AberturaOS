@@ -1,9 +1,18 @@
 <?php
+$estado = "";
+$Cliente = "";
+$Local = "";
+$UltCont = "";
+$Email = "";
+$Serie = "";
+$Tel = "";
+$CodEmp = "";
 function preenchimento($conn, $serie)
 {
     $sql = "SELECT TOP 1 1 existPat FROM TB02112
         WHERE TB02112_PAT = '$serie'
     ";
+    $existPat = "";
     $stmt = sqlsrv_query($conn, $sql);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $existPat .= $row['existPat'];
@@ -58,6 +67,7 @@ function PegaTipo($conn, $serie)
     $sql = "SELECT TOP 1 TB02112_NUMSERIE numSerie FROM TB02112
         WHERE TB02112_PAT = '$serie'
     ";
+    $numSerie = "";
     $stmt = sqlsrv_query($conn, $sql);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $numSerie .= $row['numSerie'];
@@ -86,6 +96,7 @@ function PegaTipo($conn, $serie)
             ORDER BY TB02115_CODIGO DESC
     ";
     $stmt = sqlsrv_query($conn, $sql);
+    $Tipo = "";
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $Tipo .= 'Já existe uma OS em aberto do tipo ' . $row['Tipo'] . ' para esse numero de série.';
     }
@@ -99,6 +110,7 @@ function indentificaProd($conn, $serie)
     $sql = "SELECT TOP 1 1 existPat FROM TB02112
         WHERE TB02112_PAT = '$serie'
     ";
+    $existPat = "";
     $stmt = sqlsrv_query($conn, $sql);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $existPat .= $row['existPat'];
@@ -124,7 +136,7 @@ function indentificaProd($conn, $serie)
 
 function empOper($CodEmp)
 {
-    switch ($CodEmp) {
+    /* switch ($CodEmp) {
         case '00':
             $operacaoVend = '10';
             $statusVend = 'J0';
@@ -147,7 +159,10 @@ function empOper($CodEmp)
         case '08':
             $operacaoVend = '43';
             $statusVend = 'K1';
-    }
+    } */
+
+    $operacaoVend = '19';
+    $statusVend = 'B6';
 
     return [$operacaoVend, $statusVend];
 }

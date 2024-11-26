@@ -1,13 +1,13 @@
 <?php
 header('Content-type: text/html; charset=ISO-8895-1');
 include_once "../Config.php";
-
-$ret = $_GET['ret'];
-if ($ret == '1') {
+/* $ret = " ";
+$ret = $_GET['ret']; */
+/* if ($ret == '1') {
     $msgErr = 'Série ou patrimônio inexistente!';
 } else {
     $msgErr = '';
-}
+} */
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -21,7 +21,7 @@ if ($ret == '1') {
 </head>
 
 <body>
-    <form class="form-serie" method="get" action="<?= $url ?>/index.php">
+    <form class="form-serie" method="get" action="index.php">
         <img src="../img/logo.jpg" alt="logo">
         <div class="form-group">
             <div class="div-serie">
@@ -30,7 +30,7 @@ if ($ret == '1') {
             </div>
         </div>
         <button type="submit" class="submit-btn">OK</button>
-        <?= "<h1 class='retErro'>$msgErr<h1>"; ?>
+        
     </form>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="../JS/script.js" charset="utf-8"></script>
