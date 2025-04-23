@@ -178,7 +178,7 @@ if (isset($serie)) {
                         background: white;
                     }
 
-                    b {
+                    p {
                         color: red;
                     }
                 </style>
@@ -187,8 +187,7 @@ if (isset($serie)) {
             <div class="div-save">
                 <form class="form-voltar" id="form-voltar" action="<?= $url ?>/inputSerie.php">
                     <!-- <img src="../img/logo.jpg" alt="logo"> -->
-                    <p class="OSCriadaTx">CLIENTE SUSPENSO!!!</p>
-                    <h1><b class="OSCriada"><?= $numOS ?></b></h1>
+                    <p>CLIENTE SUSPENSO!!!</p>
                     <button onclick="window.location.reload()" type="submit" class="popup-btn">Fechar</button>
                 </form>
             </div>
