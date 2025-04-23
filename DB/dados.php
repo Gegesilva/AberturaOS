@@ -12,6 +12,8 @@ $CodEmp = "";
 
 function preenchimento($conn, $serie)
 {
+    global $estado, $Cliente, $Local, $UltCont, $Email, $Serie, $Tel, $CodEmp;
+
     $sql = "SELECT TOP 1 1 existPat FROM TB02112
         WHERE TB02112_PAT = '$serie'
     ";
