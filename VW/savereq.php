@@ -192,7 +192,7 @@ if (isset($serie)) {
             <div class="div-save">
                 <form class="form-voltar" id="form-voltar" action="<?= $url ?>/inputSerie.php">
                     <!-- <img src="../img/logo.jpg" alt="logo"> -->
-                    <p>Impossibilitado de abrir chamado.</p>
+                    <p>Impossibilitado de abrir requisições.</p>
                     <p>Entrar em contato no fone: <?= formatarTelefone($Tel) ?></p>
                     <button onclick="window.location.reload()" type="submit" class="popup-btn">Fechar</button>
                 </form>

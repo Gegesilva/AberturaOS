@@ -186,3 +186,28 @@ function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
         //print ('Erro OS não gravada!!!');
     }
 }
+
+/* Mascara de telefone */
+
+function formatarTelefone($telefone) {
+    // Remove tudo que não for número
+    $telefone = preg_replace('/\D/', '', $telefone);
+
+    // Verifica se é telefone com DDD
+    if (strlen($telefone) == 11) {
+        // Celular com DDD: (11) 91234-5678
+        return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefone);
+    } elseif (strlen($telefone) == 10) {
+        // Fixo com DDD: (11) 1234-5678
+        return preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $telefone);
+    } elseif (strlen($telefone) == 9) {
+        // Celular sem DDD: 91234-5678
+        return preg_replace('/(\d{5})(\d{4})/', '$1-$2', $telefone);
+    } elseif (strlen($telefone) == 8) {
+        // Fixo sem DDD: 1234-5678
+        return preg_replace('/(\d{4})(\d{4})/', '$1-$2', $telefone);
+    }
+
+    // Retorna como está se não for padrão conhecido
+    return $telefone;
+}
