@@ -139,7 +139,7 @@ function indentificaProd($conn, $serie)
     return $existProd;
 }
 
-/* function empOper($CodEmp)
+function empOper($CodEmp)
 {
     global $operacao, $statusVenda;
     /* switch ($CodEmp) {
@@ -165,10 +165,10 @@ function indentificaProd($conn, $serie)
         case '08':
             $operacaoVend = '43';
             $statusVend = 'K1';
-    } 
+    }  */
 
     $operacaoVend = $operacao;
     $statusVend = $statusVenda;
 
     return [$operacaoVend, $statusVend];
-} */
+}

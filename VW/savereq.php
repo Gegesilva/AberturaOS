@@ -28,7 +28,7 @@ $CodEmp = $_POST['codEmp'];
 
 if (isset($serie)) {
 
-    //list($operacaoVend, $statusVend) = empOper($CodEmp);
+    list($operacaoVend, $statusVend) = empOper($CodEmp);
 
     /* Confere se existe uma requisição */
     $sql = "SELECT 
@@ -37,8 +37,8 @@ if (isset($serie)) {
             FROM TB02018
             WHERE
                 TB02018_NUMSERIE = '$serie'
-                AND TB02018_TIPODESC IN ('$operacao')
-                AND TB02018_STATUS IN ('$statusVenda')
+                AND TB02018_TIPODESC IN ('$operacaoVend')
+                AND TB02018_STATUS IN ('$statusVend')
                 ORDER BY TB02018_DTCAD DESC";
 
     $stmt = sqlsrv_query($conn, $sql);
@@ -69,9 +69,9 @@ if (isset($serie)) {
 
     if (($exist != '1' || $exist = '' || $exist = NULL) && $SitCli == 'A') {
 
-        //list($operacaoVend, $statusVend) = empOper($CodEmp);
+        list($operacaoVend, $statusVend) = empOper($CodEmp);
 
-        geraReq($conn, $local, $email, $ultcont, $serie, $whatsapp, $solicitante, $defeito, $tonerPB, $preto, $azul, $amarelo, $magenta, $outro, $periodo, $operacao, $statusVenda);
+        geraReq($conn, $local, $email, $ultcont, $serie, $whatsapp, $solicitante, $defeito, $tonerPB, $preto, $azul, $amarelo, $magenta, $outro, $periodo, $operacaoVend, $statusVend);
 
 
         /* Pega o ultimo numero de OS aberto */
@@ -79,7 +79,7 @@ if (isset($serie)) {
         $req .= $ultContGer;
 
         /* Grava o histórico do primeiro status na abertura */
-        gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVenda);
+        gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend);
 
         ?>
 

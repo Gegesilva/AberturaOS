@@ -15,6 +15,7 @@ $statusInicial = '01';
 $CodVendedor = '0000';
 $Condicao = '000';
 
+/* Preencher quando forem unicos caso contrario contatar desenvolvedor!!! 👀 */
 $operacao = '00';
 $statusVenda = '01';
 
