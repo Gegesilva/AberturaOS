@@ -1,4 +1,6 @@
 <?php
+include "../Config.php";
+
 $estado = "";
 $Cliente = "";
 $Local = "";
@@ -7,6 +9,7 @@ $Email = "";
 $Serie = "";
 $Tel = "";
 $CodEmp = "";
+
 function preenchimento($conn, $serie)
 {
     $sql = "SELECT TOP 1 1 existPat FROM TB02112
@@ -134,8 +137,9 @@ function indentificaProd($conn, $serie)
     return $existProd;
 }
 
-function empOper($CodEmp)
+/* function empOper($CodEmp)
 {
+    global $operacao, $statusVenda;
     /* switch ($CodEmp) {
         case '00':
             $operacaoVend = '10';
@@ -159,10 +163,10 @@ function empOper($CodEmp)
         case '08':
             $operacaoVend = '43';
             $statusVend = 'K1';
-    } */
+    } 
 
-    $operacaoVend = '19';
-    $statusVend = 'B6';
+    $operacaoVend = $operacao;
+    $statusVend = $statusVenda;
 
     return [$operacaoVend, $statusVend];
-}
+} */
