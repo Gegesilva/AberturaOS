@@ -48,6 +48,26 @@ if (isset($serie)) {
         $exist = $row['Exist'];
     }
 
+    /* Confere se o cliente esta ativo */
+    $sql = "SELECT 
+                TB02018_CODIGO Orcamento,
+                '1' Exist
+            FROM TB02018
+            WHERE
+                TB02018_NUMSERIE = '$serie'
+                AND TB02018_TIPODESC IN ('$operacao')
+                AND TB02018_STATUS IN ('$statusVenda')
+                ORDER BY TB02018_DTCAD DESC";
+
+    $stmt = sqlsrv_query($conn, $sql);
+    $orcamentoAberto = "";
+    $exist = "";
+    $req = "";
+    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+        $orcamentoAberto = $row['Orcamento'];
+        $exist = $row['Exist'];
+    }
+
     if ($exist != '1' || $exist = '' || $exist = NULL) {
 
         //list($operacaoVend, $statusVend) = empOper($CodEmp);

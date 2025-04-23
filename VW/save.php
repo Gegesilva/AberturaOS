@@ -27,10 +27,8 @@ if (isset($serie)) {
     /* Confere se existe uma OS do tipo Normal */
     $sql = "SELECT TOP 1 
                 TB02115_PREVENTIVA tipoOS,
-                TB02115_CODIGO OS,
-				TB01008_SITUACAO SitCli
+                TB02115_CODIGO OS
             FROM TB02115
-			LEFT JOIN TB01008 ON TB01008_CODIGO = TB02115_CODCLI
             WHERE
                 TB02115_SITUACAO = 'A'
                 AND TB02115_DTFECHA IS NULL
@@ -42,16 +40,30 @@ if (isset($serie)) {
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $tipoOS .= $row['tipoOS'];
         $OSAberta .= $row['OS'];
+    }
+
+    /* Confere se o cliente esta ativo */
+    $sql = "SELECT TOP 1
+                TB01008_SITUACAO SitCli
+            FROM TB02112
+            LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
+            LEFT JOIN TB01008 ON TB01008_CODIGO = TB02111_CODCLI
+            WHERE TB02112_NUMSERIE = '$serie'";
+
+    $stmt = sqlsrv_query($conn, $sql);
+    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $SitCli .= $row['SitCli'];
     }
 
-    if ($tipoOS != 'N') {
+
+
+    if ($tipoOS != 'N' && $SitCli == 'A') {
         gravaOS($conn, $estado, $local, $email, $contpb, $serie, $whatsapp, $solicitante, $defeito, $periodo);
         /* Pega o ultimo numero de OS aberto */
         $sql = "SELECT TOP 1 
-        TB02115_CODIGO numOS 
-        FROM TB02115 
-        ORDER BY TB02115_DTCAD DESC";
+                    TB02115_CODIGO numOS 
+                    FROM TB02115 
+                    ORDER BY TB02115_DTCAD DESC";
 
         $stmt = sqlsrv_query($conn, $sql);
         $numOS = "";
