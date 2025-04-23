@@ -10,6 +10,7 @@ $tipoOS = "";
 $OSAberta = "";
 $numOS = "";
 $SitCli = "";
+$Tel = "";
 
 $estado = $_POST['estado'];
 $local = $_POST['local'];
@@ -44,15 +45,19 @@ if (isset($serie)) {
 
     /* Confere se o cliente esta ativo */
     $sql = "SELECT TOP 1
-                TB01008_SITUACAO SitCli
+                TB01008_SITUACAO SitCli,
+                TB00012_FONE Tel
             FROM TB02112
             LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
             LEFT JOIN TB01008 ON TB01008_CODIGO = TB02111_CODCLI
+            LEFT JOIN TB01007 ON TB01007_CODIGO = TB02111_CODEMP
+			LEFT JOIN TB00012 ON TB00012_CODIGO = TB02111_CODEMP AND TB00012_TABELA = 'TB01007'
             WHERE TB02112_NUMSERIE = '$serie'";
 
     $stmt = sqlsrv_query($conn, $sql);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $SitCli .= $row['SitCli'];
+        $Tel .= $row['Tel'];
     }
 
 
@@ -179,7 +184,7 @@ if (isset($serie)) {
                     }
 
                     p {
-                        color: red;
+                        color: Blue;
                     }
                 </style>
             </head>
@@ -187,7 +192,8 @@ if (isset($serie)) {
             <div class="div-save">
                 <form class="form-voltar" id="form-voltar" action="<?= $url ?>/inputSerie.php">
                     <!-- <img src="../img/logo.jpg" alt="logo"> -->
-                    <p>CLIENTE SUSPENSO!!!</p>
+                    <p>Impossibilitado de abrir chamado.</p>
+                    <p>Entrar em contato no fone: <?= formatarTelefone($Tel) ?></p>
                     <button onclick="window.location.reload()" type="submit" class="popup-btn">Fechar</button>
                 </form>
             </div>

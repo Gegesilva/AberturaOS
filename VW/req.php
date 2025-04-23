@@ -32,7 +32,7 @@ echo $CodEmp;
     <div class="div-save" id="div-save"></div>
     <div class="div-form">
         <form method="POST" class="form-geral" id="form-geral-req">
-            <img src="../img/logo.jpg" alt="logo">
+           <!--  <img src="../img/logo.jpg" alt="logo"> -->
             <div class="btn-solic-btn">
             </div>
             <h1 class="titulos">SOLICITAÇÃO DE SUPRIMENTO</h1>

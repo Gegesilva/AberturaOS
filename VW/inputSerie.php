@@ -22,7 +22,7 @@ $ret = $_GET['ret']; */
 
 <body>
     <form class="form-serie" method="get" action="index.php">
-        <img src="../img/logo.jpg" alt="logo">
+        <!-- <img src="../img/logo.jpg" alt="logo"> -->
         <div class="form-group">
             <div class="div-serie">
                 <label for="serie">Série/Pat *</label>
