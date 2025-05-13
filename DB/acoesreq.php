@@ -53,7 +53,6 @@ function geraReq($conn, $local, $email, $ultcont, $serie, $whatsapp, $solicitant
         FROM TB02112
         LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
         WHERE TB02112_SITUACAO = 'A'
-        AND TB02111_TIPOCONTR = 'L'
         AND TB02112_NUMSERIE = ?;
 
         UPDATE TB00002 
