@@ -3,13 +3,13 @@ include_once "conexaoSQL.php";
 include_once "../Config.php";
 
 /* Gera o proximo contador */
-$sql = "SELECT TOP 1
+$sqlCont = "SELECT TOP 1
             SUBSTRING(TB00002_COD, 0, 2)+FORMAT(CAST(SUBSTRING(TB00002_COD, 2, 6) AS NUMERIC) + 1, '00000') ultContGer
         FROM TB00002
         WHERE TB00002_TABELA = 'TB02018R'";
-$stmt = sqlsrv_query($conn, $sql);
-
-while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+$stmtCont = sqlsrv_prepare($conn, $sqlCont, []);
+sqlsrv_execute($stmtCont);
+while ($row = sqlsrv_fetch_array($stmtCont, SQLSRV_FETCH_ASSOC)) {
     $ultContGer = $row['ultContGer'];
 }
 
@@ -17,106 +17,73 @@ while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
 function geraReq($conn, $local, $email, $ultcont, $serie, $whatsapp, $solicitante, $defeito, $tonerPB, $preto, $azul, $amarelo, $magenta, $outro, $periodo, $operacaoVend, $statusVend)
 {
     global $ultContGer, $CodVendedor, $Condicao;
+    /* define o tamanho das string */
+    $whatsapp = substr(trim($whatsapp), 0, 11);
+    $local = substr(trim($local), 0, 200);
+    $email = substr(trim($email), 0, 200);
+    $solicitante = substr(trim($solicitante), 0, 30);
+    $ultcont = substr(trim($ultcont), 0, 10);
+    $defeito = trim($defeito);
 
-    /* Trata o numero de caracteres que será inserido no campo TB02115_CELULAR */
-    $whatsapp = substr($whatsapp, 0, 11);
-
-    /* Trata o numero de caracteres que será inserido no campo TB02115_LOCAL */
-    $local = substr($local, 0, 200);
-
-    /* Trata o numero de caracteres que será inserido no campo TB02115_EMAIL */
-    $email = substr($email, 0, 200);
-
-    /* Trata o numero de caracteres que será inserido no campo TB02115_SOLICITANTE */
-    $solicitante = substr($solicitante, 0, 30);
-
-    /* Trata o numero de caracteres que será inserido no campo TB02115_SOLICITANTE */
-    $ultcont = substr($ultcont, 0, 10);
-
-    /* Verifica se e patrimonio ou serie antes de gravar */
-    $sql = "SELECT TOP 1 
-                TB02112_NUMSERIE NumSerie
-            FROM TB02112
-            WHERE TB02112_PAT = '$serie'
-            AND TB02112_SITUACAO = 'A'
-    ";
-    $NumSerie = '';
-    $stmt = sqlsrv_query($conn, $sql);
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-        $NumSerie = $row['NumSerie'];
+    // Verifica se é patrimônio e converte para número de série
+    $sqlSerie = "SELECT TOP 1 TB02112_NUMSERIE FROM TB02112 WHERE TB02112_PAT = ? AND TB02112_SITUACAO = 'A'";
+    $stmtSerie = sqlsrv_prepare($conn, $sqlSerie, [$serie]);
+    sqlsrv_execute($stmtSerie);
+    $rowSerie = sqlsrv_fetch_array($stmtSerie, SQLSRV_FETCH_ASSOC);
+    if ($rowSerie && isset($rowSerie['TB02112_NUMSERIE'])) {
+        $serie = $rowSerie['TB02112_NUMSERIE'];
     }
 
-    if ($NumSerie != NULL || $NumSerie != '') {
-        $serie = $NumSerie;
-    } else {
+    // Monta a observação como string segura
+    $obs = "Melhor periodo para visita: $periodo \nLocal ou setor: $local \nTonerPB: $tonerPB \n\nTONER COLORIDO \nPreto: $preto, \nAzul: $azul, \nAmarelo: $amarelo, \nMagenta: $magenta, \nOutro: $outro \nOBS: $defeito";
 
-    }
+    $sqlOrc = "
+        INSERT INTO TB02018(
+            TB02018_CODIGO, TB02018_DTCAD, TB02018_DATAEXEC, TB02018_DATA,
+            TB02018_CODEMP, TB02018_CODCLI, TB02018_VEND, TB02018_TIPODESC,
+            TB02018_CONDPAG, TB02018_STATUS, TB02018_SITUACAO, TB02018_OPERACAO,
+            TB02018_NOME, TB02018_FONE, TB02018_CONTRATO, TB02018_EMAIL,
+            TB02018_CODSITE, TB02018_NUMSERIE, TB02018_OBS, TB02018_CONTTOTAL, TB02018_OPCAD
+        )
+        SELECT 
+            ?, GETDATE(), GETDATE(), GETDATE(),
+            TB02111_CODEMP, TB02111_CODCLI, ?, ?, ?, ?,
+            'A', 3, TB02111_NOME, ?, TB02111_CODIGO, ?, 
+            TB02112_CODSITE, ?, ?, ?, ?
+        FROM TB02112
+        LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
+        WHERE TB02112_SITUACAO = 'A'
+        AND TB02111_TIPOCONTR = 'L'
+        AND TB02112_NUMSERIE = ?;
 
-    $sql = "INSERT INTO TB02018(
-                TB02018_CODIGO,
-                TB02018_DTCAD,
-                TB02018_DATAEXEC,
-                TB02018_DATA,
-                TB02018_CODEMP,
-                TB02018_CODCLI,
-                TB02018_VEND,
-                TB02018_TIPODESC,
-                TB02018_CONDPAG,
-                TB02018_STATUS,
-                TB02018_SITUACAO,
-                TB02018_OPERACAO,
-                TB02018_NOME, --nome do consumidor final
-                TB02018_FONE,
-                TB02018_CONTRATO,
-                TB02018_EMAIL,
-                TB02018_CODSITE,
-                TB02018_NUMSERIE,
-                TB02018_OBS,
-                TB02018_CONTTOTAL,
-                TB02018_OPCAD)
-            (SELECT 
-                '$ultContGer',
-                GETDATE(),
-                GETDATE(),
-                GETDATE(),
-                TB02111_CODEMP,
-                TB02111_CODCLI,
-                '$CodVendedor',
-                '$operacaoVend',
-                '$Condicao',
-                '$statusVend',
-                'A',
-                3,
-                TB02111_NOME,
-                '$whatsapp',
-                TB02111_CODIGO,
-                '$email',
-                TB02112_CODSITE,
-                '$serie',
-                'Melhor periodo para visita: $periodo \nLocal ou setor: $local \nTonerPB: $tonerPB \n\nTONER COLORIDO \nPreto: $preto, \nAzul: $azul, \nAmarelo: $amarelo, \nMagenta: $magenta, \nOutro: $outro \nOBS: $defeito',
-                '$ultcont',
-                '$solicitante'
-                 
-            FROM TB02112
-            LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
-            WHERE TB02112_SITUACAO = 'A'
-            AND TB02111_TIPOCONTR = 'L'
-            AND TB02112_NUMSERIE = '$serie')
-
-            UPDATE 
-                TB00002 
-            SET 
-                TB00002_cod = '$ultContGer'  
-            WHERE 
-                TB00002_tabela = 'TB02018R'
-
+        UPDATE TB00002 
+        SET TB00002_cod = ? 
+        WHERE TB00002_tabela = 'TB02018R';
     ";
-    $stmt = sqlsrv_query($conn, $sql);
-    if ($stmt === false) {
+
+    $params = [
+        $ultContGer,         // TB02018_CODIGO
+        $CodVendedor,        // TB02018_VEND
+        $operacaoVend,       // TB02018_TIPODESC
+        $Condicao,           // TB02018_CONDPAG
+        $statusVend,         // TB02018_STATUS
+        $whatsapp,           // TB02018_FONE
+        $email,              // TB02018_EMAIL
+        $serie,              // TB02018_NUMSERIE
+        $obs,                // TB02018_OBS
+        $ultcont,            // TB02018_CONTTOTAL
+        $solicitante,        // TB02018_OPCAD
+        $serie,              // WHERE TB02112_NUMSERIE
+        $ultContGer          // TB00002_cod
+    ];
+
+    $stmtOrc = sqlsrv_prepare($conn, $sqlOrc, $params);
+
+    if (!$stmtOrc || !sqlsrv_execute($stmtOrc)) {
         die(print_r(sqlsrv_errors(), true));
-        //print ('Erro OS não gravada!!!');
     }
 }
+
 
 function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
 {

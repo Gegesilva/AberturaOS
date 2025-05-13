@@ -26,7 +26,7 @@ function gravaOS($conn, $estado, $local, $email, $contpb, $serie, $whatsapp, $so
     $solicitante = substr($solicitante, 0, 30);
     $contpb = substr($contpb, 0, 10);
 
-    // Consulta o número de série real
+    // Consulta se e serie ou pat
     $sqlSerie = "SELECT TOP 1 TB02112_NUMSERIE FROM TB02112 WHERE TB02112_PAT = ? AND TB02112_SITUACAO = 'A'";
     $stmtSerie = sqlsrv_prepare($conn, $sqlSerie, [$serie]);
     sqlsrv_execute($stmtSerie);
@@ -153,7 +153,7 @@ function gravaHistorico($conn, $numOS, $serie, $defeito, $statusInicial)
     if(!sqlsrv_execute($stmt)){
         print("Erro Historico");
     }
-
+  
 }
 
 
