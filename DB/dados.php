@@ -14,76 +14,76 @@ function preenchimento($conn, $serie)
 {
     global $estado, $Cliente, $Local, $UltCont, $Email, $Serie, $Tel, $CodEmp;
 
-    $sql = "SELECT TOP 1 1 existPat FROM TB02112
-        WHERE TB02112_PAT = '$serie'
-    ";
-    $existPat = "";
-    $stmt = sqlsrv_query($conn, $sql);
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-        $existPat .= $row['existPat'];
+    // Sanitização básica da entrada
+    $serie = trim($serie);
+    $existPat = false;
+
+    // Verifica se o valor existe como patrimônio
+    $sqlVerificaPat = "SELECT TOP 1 1 AS existPat FROM TB02112 WHERE TB02112_PAT = ?";
+    $stmtVerificaPat = sqlsrv_prepare($conn, $sqlVerificaPat, [$serie]);
+
+    if ($stmtVerificaPat && sqlsrv_execute($stmtVerificaPat)) {
+        if ($row = sqlsrv_fetch_array($stmtVerificaPat, SQLSRV_FETCH_ASSOC)) {
+            $existPat = $row['existPat'] == 1;
+        }
     }
 
-    if ($existPat == '1') {
-        $filtroPatSerie = "AND TB02112_PAT = '$serie'";
-    } else {
-        $filtroPatSerie = "AND TB02112_NUMSERIE = '$serie'";
-    }
-
-
-
-    $sql = "SELECT 
-                TB02112_ESTADO Estado,
-                TB01008_NOME Cliente,
-                TB02112_LOCAL Local,
-                TB02112_EMAIL Email,
-                (SELECT TOP 1 TB02117_TOTPB FROM TB02117 WHERE TB02117_NUMSERIE = TB02112_NUMSERIE ORDER BY TB02117_DTCAD DESC) UltCont,
-                TB02112_NUMSERIE Serie,
-                TB02112_FONEAUX Tel,
-                TB02176_CODEMP CodEmp
-                
-            FROM TB02112
-            LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
-            LEFT JOIN TB01008 ON TB01008_CODIGO = TB02111_CODCLI
-            LEFT JOIN TB02176 ON TB02176_CONTRATO = TB02111_CODIGO AND TB02176_CODIGO = TB02112_CODSITE
-
-            WHERE TB02112_SITUACAO = 'A'
-            --AND TB02111_TIPOCONTR = 'L'
-            $filtroPatSerie
+    // Define consulta principal com base na verificação anterior
+    $filtro = $existPat ? "TB02112_PAT = ?" : "TB02112_NUMSERIE = ?";
+    $sql = "
+        SELECT 
+            TB02112_ESTADO AS Estado,
+            TB01008_NOME AS Cliente,
+            TB02112_LOCAL AS Local,
+            TB02112_EMAIL AS Email,
+            (
+                SELECT TOP 1 TB02117_TOTPB 
+                FROM TB02117 
+                WHERE TB02117_NUMSERIE = TB02112_NUMSERIE 
+                ORDER BY TB02117_DTCAD DESC
+            ) AS UltCont,
+            TB02112_NUMSERIE AS Serie,
+            TB02112_FONEAUX AS Tel,
+            TB02176_CODEMP AS CodEmp
+        FROM TB02112
+        LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
+        LEFT JOIN TB01008 ON TB01008_CODIGO = TB02111_CODCLI
+        LEFT JOIN TB02176 ON TB02176_CONTRATO = TB02111_CODIGO AND TB02176_CODIGO = TB02112_CODSITE
+        WHERE TB02112_SITUACAO = 'A' AND $filtro
     ";
-    $stmt = sqlsrv_query($conn, $sql);
 
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-        $estado = $row['Estado'];
-        $Cliente = $row['Cliente'];
-        $Local = $row['Local'];
-        $UltCont = $row['UltCont'];
-        $Email = $row['Email'];
-        $Serie = $row['Serie'];
-        $Tel = $row['Tel'];
-        $CodEmp = $row['CodEmp'];
+    $stmt = sqlsrv_prepare($conn, $sql, [$serie]);
+
+    if ($stmt && sqlsrv_execute($stmt)) {
+        if ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+            $estado = $row['Estado'];
+            $Cliente = $row['Cliente'];
+            $Local = $row['Local'];
+            $UltCont = $row['UltCont'];
+            $Email = $row['Email'];
+            $Serie = $row['Serie'];
+            $Tel = $row['Tel'];
+            $CodEmp = $row['CodEmp'];
+        }
     }
 
     return [$estado, $Cliente, $Local, $UltCont, $Email, $Serie, $Tel, $CodEmp];
-
 }
 
 function PegaTipo($conn, $serie)
 {
-    $sql = "SELECT TOP 1 TB02112_NUMSERIE numSerie FROM TB02112
-        WHERE TB02112_PAT = '$serie'
+    $sqlPat = "SELECT TOP 1 TB02112_NUMSERIE numSerie FROM TB02112
+        WHERE TB02112_PAT = ?
     ";
     $numSerie = "";
-    $stmt = sqlsrv_query($conn, $sql);
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+    $stmtPat = sqlsrv_prepare($conn, $sqlPat, [$serie]);
+    sqlsrv_execute($stmtPat);
+    while ($row = sqlsrv_fetch_array($stmtPat, SQLSRV_FETCH_ASSOC)) {
         $numSerie .= $row['numSerie'];
     }
 
-    if (isset($numSerie)) {
-        $serie = $numSerie;
-    }
-
-
-    $sql = "SELECT TOP 1
+    $serie = isset($numSerie) ? $numSerie : $serie;
+    $sqlTipo = "SELECT TOP 1
                 CASE 
                     WHEN TB02115_PREVENTIVA = 'N' THEN 'NORMAL'
                     WHEN TB02115_PREVENTIVA = 'S' THEN 'PREVENTIVA'
@@ -95,14 +95,15 @@ function PegaTipo($conn, $serie)
                     WHEN TB02115_PREVENTIVA = 'E' THEN 'ESTOQUE'
                 END Tipo
             FROM TB02115 
-            WHERE TB02115_NUMSERIE = '$serie' 
+            WHERE TB02115_NUMSERIE = ? 
             AND TB02115_DTFECHA IS NULL
             GROUP BY TB02115_PREVENTIVA, TB02115_CODIGO
             ORDER BY TB02115_CODIGO DESC
     ";
-    $stmt = sqlsrv_query($conn, $sql);
+    $stmtTipo = sqlsrv_prepare($conn, $sqlTipo, [$serie]);
+    sqlsrv_execute($stmtTipo);
     $Tipo = "";
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+    while ($row = sqlsrv_fetch_array($stmtTipo, SQLSRV_FETCH_ASSOC)) {
         $Tipo .= 'Já existe uma OS em aberto do tipo ' . $row['Tipo'] . ' para esse numero de série.';
     }
 
@@ -112,27 +113,24 @@ function PegaTipo($conn, $serie)
 function indentificaProd($conn, $serie)
 {
 
-    $sql = "SELECT TOP 1 1 existPat FROM TB02112
-        WHERE TB02112_PAT = '$serie'
+    $sqlPat = "SELECT TOP 1 1 existPat FROM TB02112
+        WHERE TB02112_PAT = ?
     ";
     $existPat = "";
-    $stmt = sqlsrv_query($conn, $sql);
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+    $stmtPat = sqlsrv_prepare($conn, $sqlPat, [$serie]);
+    sqlsrv_execute($stmtPat);
+    while ($row = sqlsrv_fetch_array($stmtPat, SQLSRV_FETCH_ASSOC)) {
         $existPat .= $row['existPat'];
     }
 
-    if ($existPat == '1') {
-        $filtroPatSerie = "TB02112_PAT = '$serie'";
-    } else {
-        $filtroPatSerie = "TB02112_NUMSERIE = '$serie'";
-    }
+    $filtroPatSerie = $existPat == '1' ? "TB02112_PAT = ?" : "TB02112_NUMSERIE = ?";
 
-
-    $sql = "SELECT 1 existProd FROM TB02112
+    $sqlProd = "SELECT 1 existProd FROM TB02112
     WHERE $filtroPatSerie
 ";
-    $stmt = sqlsrv_query($conn, $sql);
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+    $stmtProd = sqlsrv_prepare($conn, $sqlProd, [$serie]);
+    sqlsrv_execute($stmtProd);
+    while ($row = sqlsrv_fetch_array($stmtProd, SQLSRV_FETCH_ASSOC)) {
         $existProd = $row['existProd'];
     }
 

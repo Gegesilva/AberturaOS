@@ -2,14 +2,15 @@
 include_once "../config.php";
 
 /* Gera o proximo numero de OS */
-$sql = "SELECT TOP 1
+$sqlOs = "SELECT TOP 1
             FORMAT(TB00002_COD + 1, '000000') novaOS 
         FROM TB00002
         WHERE 
             TB00002_TABELA = 'TB02115'
     ";
-$stmt = sqlsrv_query($conn, $sql);
-while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+$stmtOS = sqlsrv_prepare($conn, $sqlOs, []);
+sqlsrv_execute($stmtOS);
+while ($row = sqlsrv_fetch_array($stmtOS, SQLSRV_FETCH_ASSOC)) {
     $novaOS = $row['novaOS'];
 }
 
@@ -90,6 +91,8 @@ function gravaHistorico($conn, $numOS, $serie, $defeito, $statusInicial)
     }
     
 
+
+
     if (isset($NumSerie)) {
         $serie = $NumSerie;
     } else {
@@ -146,7 +149,10 @@ function gravaHistorico($conn, $numOS, $serie, $defeito, $statusInicial)
                 $serie
             ];
 
-    $stmtSerie = sqlsrv_prepare($conn, $sql, $params);
+    $stmt = sqlsrv_prepare($conn, $sql, $params);
+    if(!sqlsrv_execute($stmt)){
+        print("Erro Historico");
+    }
 
 }
 
