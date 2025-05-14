@@ -34,10 +34,11 @@ if (isset($serie)) {
             WHERE
                 TB02115_SITUACAO = 'A'
                 AND TB02115_DTFECHA IS NULL
-                AND TB02115_NUMSERIE = '$serie'
+                AND TB02115_NUMSERIE = ?
             ORDER BY TB02115_DTCAD DESC";
 
-    $stmt = sqlsrv_query($conn, $sql);
+    $stmt = sqlsrv_prepare($conn, $sql, [$serie]);
+    sqlsrv_execute($stmt);
     $tipoOS = "";
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $tipoOS .= $row['tipoOS'];

@@ -34,12 +34,19 @@ if (isset($serie)) {
                 '1' Exist
             FROM TB02018
             WHERE
-                TB02018_NUMSERIE = '$serie'
-                AND TB02018_TIPODESC IN ('$operacao')
-                AND TB02018_STATUS IN ('$statusVenda')
+                TB02018_NUMSERIE = ?
+                AND TB02018_TIPODESC IN (?)
+                AND TB02018_STATUS IN (?)
                 ORDER BY TB02018_DTCAD DESC";
 
-    $stmt = sqlsrv_query($conn, $sql);
+    $params = [
+        $serie,
+        $operacao,
+        $statusVenda
+    ];
+
+    $stmt = sqlsrv_prepare($conn, $sql, $params);
+    sqlsrv_execute($stmt);
     $orcamentoAberto = "";
     $exist = "";
     $req = "";

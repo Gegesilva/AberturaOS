@@ -36,12 +36,12 @@ if (indentificaProd($conn, $serie) != '1') {
             </div>
             <h1 class="titulos">ABERTURA CHAMADO TEC</h1>
             <div class="buttons-forms">
-               <!--  <button class="btn-req" id="btn-req" style="color: black; opacity: 0.4;"
+                <button class="btn-req" id="btn-req" style="color: black; opacity: 0.4;"
                     onClick="window.location='<?= $url ?>/index.php?serie=<?= $serie ?>';" type="submit"
                     class="voltar-btn-form">Chamado tec</button>
                 <button class="btn-req" id="btn-req-sup"
                     onClick="window.location='<?= $url ?>/req.php?serie=<?= $serie ?>';" type="submit"
-                    class="voltar-btn-form">Suprimentos</button> -->
+                    class="voltar-btn-form">Suprimentos</button>
             </div>
             <h6 class="msg-os"><?= PegaTipo($conn, $serie) ?></h6>
             <div class="form-group">
