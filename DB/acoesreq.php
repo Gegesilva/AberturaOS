@@ -92,22 +92,20 @@ function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
     $sql = "SELECT TOP 1 
                 TB02112_NUMSERIE NumSerie
             FROM TB02112
-            WHERE TB02112_PAT = '$serie'
+            WHERE TB02112_PAT = ?
             AND TB02112_SITUACAO = 'A'
             ";
     $NumSerie = '';
-    $stmt = sqlsrv_query($conn, $sql);
+    $stmt = sqlsrv_prepare($conn, $sql, [$serie]);
+    sqlsrv_execute($stmt);
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
         $NumSerie = $row['NumSerie'];
     }
 
-    if ($NumSerie != NULL || $NumSerie != '') {
-        $serie = $NumSerie;
-    } else {
 
-    }
+    $serie = $NumSerie != null || $NumSerie != '' ? $NumSerie : $serie;
 
-    $sql = "INSERT INTO TB02130
+    $sqlHist = "INSERT INTO TB02130
                 (TB02130_CODIGO,
                 TB02130_DATA, 
                 TB02130_USER,
@@ -124,13 +122,13 @@ function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
                 TB02130_HORASCOM,
                 TB02130_HORASFIM)
             SELECT TOP 1
-                '$ultContGer',
+                ?,
                 GETDATE(),
-                '$solicitante', 
-                '$statusVend', 
+                ?, 
+                ?, 
                 TB01021_NOME, 
-                '$defeito',
-                '$CodVendedor',
+                ?,
+                ?,
                 NULL,
                 TB01006_NOME, 
                 'V',
@@ -140,14 +138,26 @@ function gravaHistoricoReq($conn, $serie, $solicitante, $defeito, $statusVend)
                 '00:00', 
                 '00:00'
             FROM TB02112
-            LEFT JOIN TB01021 ON TB01021_CODIGO = '$statusVend'
-            LEFT JOIN TB01006 ON TB01006_CODIGO = '$CodVendedor'
+            LEFT JOIN TB01021 ON TB01021_CODIGO = ?
+            LEFT JOIN TB01006 ON TB01006_CODIGO = ?
             LEFT JOIN TB02111 ON TB02111_CODIGO = TB02112_CODIGO
-            WHERE TB02112_NUMSERIE = '$serie'
+            WHERE TB02112_NUMSERIE = ?
             AND TB02112_SITUACAO = 'A'";
-    $stmt = sqlsrv_query($conn, $sql);
 
-    if ($stmt === false) {
+            $params = [
+                $ultContGer,
+                $solicitante,
+                $statusVend,
+                $defeito,
+                $CodVendedor,
+                $statusVend,
+                $CodVendedor,
+                $serie
+            ];
+
+    $stmtHist = sqlsrv_prepare($conn, $sqlHist, $params);
+    sqlsrv_execute($stmtHist);
+    if ($stmtHist === false) {
         die(print_r(sqlsrv_errors(), true));
         //print ('Erro OS não gravada!!!');
     }
